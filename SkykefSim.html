@@ -335,8 +335,8 @@
             canvas.width = size;
             canvas.height = size;
             
-            // Update positions if starting fresh
-            if (gameState.x === 0 || gameState.x === 1000) {
+            // Only reset icon positions if image hasn't been loaded yet
+            if (!dropzoneImage) {
                 const center = size / 2;
                 const spacing = 80; // Space between icons
                 
@@ -840,65 +840,61 @@
             }
         }
         
+
+        // Update weight display consistently based on current unit
+        function updateWeightDisplay() {
+            const slider = document.getElementById('weight-slider');
+            const display = document.getElementById('weight-display');
+            if (weightUnit === 'kg') {
+                const kg = Math.round(gameState.exitWeight / 2.20462);
+                slider.value = kg;
+                display.textContent = kg;
+            } else {
+                slider.value = gameState.exitWeight;
+                display.textContent = gameState.exitWeight;
+            }
+        }
+
         // Weight unit conversion
         let weightUnit = 'lbs';
         
         function setWeightUnit(unit) {
             if (gameState.reviewMode || gameState.running) return;
             const slider = document.getElementById('weight-slider');
-            const display = document.getElementById('weight-display');
             const unitLabel = document.getElementById('weight-unit');
             const lbsBtn = document.getElementById('weight-lbs-btn');
             const kgBtn = document.getElementById('weight-kg-btn');
             
-            if (unit === weightUnit) return; // Already in this unit
+            if (unit === weightUnit) return;
             
+            weightUnit = unit;
             if (unit === 'kg') {
-                // Convert lbs to kg
-                const lbs = parseInt(slider.value);
-                const kg = Math.round(lbs / 2.20462);
-                slider.min = Math.round(100 / 2.20462); // ~45 kg
-                slider.max = Math.round(250 / 2.20462); // ~113 kg
-                slider.value = kg;
-                display.textContent = kg;
+                slider.min = Math.round(100 / 2.20462);
+                slider.max = Math.round(250 / 2.20462);
                 unitLabel.textContent = 'kg';
-                weightUnit = 'kg';
-                lbsBtn.style.background = '#ddd';
-                lbsBtn.style.color = '#666';
-                kgBtn.style.background = '#28a745';
-                kgBtn.style.color = 'white';
+                lbsBtn.style.background = '#ddd'; lbsBtn.style.color = '#666';
+                kgBtn.style.background = '#28a745'; kgBtn.style.color = 'white';
             } else {
-                // Convert kg to lbs
-                const kg = parseInt(slider.value);
-                const lbs = Math.round(kg * 2.20462);
                 slider.min = 100;
                 slider.max = 250;
-                slider.value = lbs;
-                display.textContent = lbs;
                 unitLabel.textContent = 'lbs';
-                weightUnit = 'lbs';
-                lbsBtn.style.background = '#28a745';
-                lbsBtn.style.color = 'white';
-                kgBtn.style.background = '#ddd';
-                kgBtn.style.color = '#666';
+                lbsBtn.style.background = '#28a745'; lbsBtn.style.color = 'white';
+                kgBtn.style.background = '#ddd'; kgBtn.style.color = '#666';
             }
-            
-            // Update gameState (always store in lbs internally)
-            if (weightUnit === 'kg') {
-                gameState.exitWeight = Math.round(parseInt(slider.value) * 2.20462);
-            } else {
-                gameState.exitWeight = parseInt(slider.value);
-            }
+            // gameState.exitWeight is always in lbs - just update display
+            updateWeightDisplay();
         }
         
         document.getElementById('weight-slider').addEventListener('input', (e) => {
             if (gameState.reviewMode || gameState.running) return;
             if (!gameState.running) {
-                gameState.exitWeight = parseInt(e.target.value);
-                document.getElementById('weight-display').textContent = e.target.value;
+                const value = parseInt(e.target.value);
+                // Always store internally in lbs
+                gameState.exitWeight = weightUnit === 'kg' ? Math.round(value * 2.20462) : value;
+                document.getElementById('weight-display').textContent = value;
                 hideTryAgain();
             } else {
-                e.target.value = gameState.exitWeight;
+                updateWeightDisplay();
             }
         });
         
@@ -1359,8 +1355,7 @@
             gameState.viewOffsetY = 279.35711947091096;
             
             // Update slider displays
-            document.getElementById('weight-slider').value = gameState.exitWeight;
-            document.getElementById('weight-display').textContent = gameState.exitWeight;
+            updateWeightDisplay();
             document.getElementById('canopy-slider').value = gameState.canopySize;
             document.getElementById('canopy-display').textContent = gameState.canopySize;
             

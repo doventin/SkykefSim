@@ -1,0 +1,2194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skydiving Landing Pattern Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        .game-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            height: 100%;
+            max-height: 100vh;
+        }
+        
+        .side-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 200px;
+        }
+        
+        .control-item {
+            background: transparent;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .control-item label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        
+        .control-item input[type="range"] {
+            width: 100%;
+        }
+        
+        .control-item .value-display {
+            font-size: 13px;
+            font-weight: bold;
+            color: #555;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .controls-panel {
+            background: transparent;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .canvas-container {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: calc(100vh - 20px);
+            width: calc(100vh - 20px);
+            max-height: calc(100vh - 20px);
+        }
+        
+        #canvas-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #game-canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+        
+        .value-display {
+            color: #2a5298;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+        
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+            background: #e8f4f8;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        .btn-start {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-start:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-reset {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-reset:hover {
+            background: #c82333;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .stat-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .stat-label {
+            color: #666;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #2a5298;
+        }
+        
+        .info-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .legend {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+        
+        .result.fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+        
+        @media (max-width: 768px) {
+            .game-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+        <!-- Help Button -->
+        <button onclick="openInstructions()" style="position: fixed; top: 10px; right: 10px; z-index: 9999; width: 36px; height: 36px; background: #007bff; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">?</button>
+
+        <div class="container">
+        <div class="game-container">
+            <!-- Left side controls -->
+            <div class="side-controls">
+                <div class="control-item">
+                    <label>משקל יציאה</label>
+                    <div style="display: flex; gap: 4px; margin-bottom: 4px; justify-content: center;">
+                        <button id="weight-lbs-btn" onclick="setWeightUnit('lbs')" style="padding: 4px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">lbs</button>
+                        <button id="weight-kg-btn" onclick="setWeightUnit('kg')" style="padding: 4px 12px; background: #ddd; color: #666; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">kg</button>
+                    </div>
+                    <input type="range" id="weight-slider" min="100" max="250" value="200" step="1">
+                    <div class="value-display"><span id="weight-display">200</span> <span id="weight-unit">lbs</span></div>
+                </div>
+                
+                <div class="control-item">
+                    <label>גודל חופה</label>
+                    <input type="range" id="canopy-slider" min="60" max="300" value="260" step="1">
+                    <div class="value-display"><span id="canopy-display">260</span> sqft</div>
+                </div>
+            </div>
+            
+            <!-- Center: Canvas -->
+            <div class="canvas-container">
+                <div id="canvas-wrapper">
+                    <canvas id="game-canvas"></canvas>
+                </div>
+            </div>
+            
+            <!-- Right side controls -->
+            <div class="side-controls">
+                <div class="control-item">
+                    <button class="btn btn-reset" onclick="resetGame()" style="width: 100%; padding: 10px;">אתחול</button>
+                </div>
+                
+                <div class="control-item" id="try-again-btn" style="display:none;">
+                    <button class="btn btn-start" onclick="tryAgain()" style="width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">נסה שוב</button>
+                </div>
+
+                
+                <div id="result"></div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Make canvas square and fill available height
+        function resizeCanvas() {
+            const container = document.querySelector('.canvas-container');
+            if (!container) return;
+            
+            const newSize = container.clientHeight - 20;
+            const oldSize = canvas.width || newSize;
+            const delta = (newSize - oldSize) / 2;
+            
+            
+            canvas.width = newSize;
+            canvas.height = newSize;
+            
+            if (dropzoneImage) setIconPositions();
+            
+            draw();
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        setTimeout(resizeCanvas, 100);
+        
+        // Dropzone background image
+        let dropzoneImage = null;
+        let useImageBackground = false;
+        window.IMAGE_SCALE = 10.34; // feet per pixel in source image (can be updated by measurement tool)
+        
+        // Auto-load skykef.jpeg from same folder, or show load button if not found
+        window.addEventListener('load', function() {
+            // Try to load skykef.jpeg from same folder
+            const img = new Image();
+            img.onload = function() {
+                window.IMAGE_SCALE = 0.984920;
+                dropzoneImage = img;
+                useImageBackground = true;
+                setIconPositions();
+                draw();
+            };
+            img.onerror = function() {
+                // File not found - show load button
+                const loadBtn = document.createElement('button');
+                loadBtn.textContent = 'Load High-Res Map';
+                loadBtn.style.cssText = 'position:fixed;top:10px;left:10px;z-index:1000;padding:8px 16px;background:#ff6b00;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
+                document.body.appendChild(loadBtn);
+                
+                loadBtn.onclick = function() {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/jpeg';
+                    input.onchange = function(e) {
+                        const file = e.target.files[0];
+                        if (file) {
+                            loadBtn.textContent = 'Loading...';
+                            loadBtn.disabled = true;
+                            const reader = new FileReader();
+                            reader.onload = function(ev) {
+                                const img2 = new Image();
+                                img2.onload = function() {
+                                    window.IMAGE_SCALE = 0.984920;
+                                    dropzoneImage = img2;
+                                    useImageBackground = true;
+                                    loadBtn.style.display = 'none';
+                                    setIconPositions();
+                                    draw();
+                                };
+                                img2.src = ev.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    };
+                    input.click();
+                };
+            };
+            img.src = 'skykef.jpeg';  // Try to load from same folder
+        });
+        
+        // Calculate minimum zoom to fill canvas with map
+        function getMinZoom() {
+            if (!dropzoneImage || !useImageBackground) {
+                return 0.2; // Default minimum for grid mode
+            }
+            
+            const scaleRatio = window.IMAGE_SCALE / (200 / 35);
+            const scaledImgWidth = dropzoneImage.width * scaleRatio;
+            const scaledImgHeight = dropzoneImage.height * scaleRatio;
+            
+            // Calculate zoom needed to fill canvas (cover mode)
+            const zoomX = canvas.width / scaledImgWidth;
+            const zoomY = canvas.height / scaledImgHeight;
+            
+            // Use max to ensure full coverage - this is the minimum allowed zoom
+            return Math.max(zoomX, zoomY);
+        }
+        
+        // Measurement modal state
+        let measurementImage = null;
+        let measurementPoints = [];
+        let measureCanvas = null;
+        let measureCtx = null;
+        
+        function loadDropzoneImage(event) {
+            const files = event.target.files;
+            let imageFile = null;
+            let pgwFile = null;
+            
+            // Separate image and PGW files
+            for (let file of files) {
+                const name = file.name.toLowerCase();
+                if (name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png')) {
+                    imageFile = file;
+                } else if (name.endsWith('.pgw') || name.endsWith('.jgw') || name.endsWith('.pngw')) {
+                    pgwFile = file;
+                }
+            }
+            
+            if (!imageFile) {
+                alert('Please select an image file (.jpg or .png)');
+                return;
+            }
+            
+            // Load the image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    measurementImage = img;
+                    
+                    // If we have a PGW file, parse it and skip calibration
+                    if (pgwFile) {
+                        parsePGWFile(pgwFile, img);
+                    } else {
+                        // No PGW, show calibration modal
+                        openMeasurementModal();
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(imageFile);
+        }
+        
+        function parsePGWFile(pgwFile, img) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result.trim();
+                    const vals = content.split('\n').map(l => parseFloat(l.trim()));
+                    
+                    if (vals.length < 6) {
+                        alert('Invalid world file (need 6 lines). Using manual calibration instead.');
+                        openMeasurementModal();
+                        return;
+                    }
+                    
+                    const A = vals[0], D = vals[1], B = vals[2], E = vals[3];
+                    const C = vals[4], F = vals[5];
+                    
+                    if (isNaN(A) || isNaN(F)) {
+                        alert('Could not parse world file values. Using manual calibration.');
+                        openMeasurementModal();
+                        return;
+                    }
+                    
+                    let feetPerPixel;
+                    const isMeters = Math.abs(A) >= 0.001;
+                    
+                    if (isMeters) {
+                        // Web Mercator (EPSG:3857) - pixel sizes are in Mercator meters
+                        // Must correct for Mercator scale factor using latitude derived from F
+                        const R = 6378137.0;
+                        const latRad = 2 * Math.atan(Math.exp(F / R)) - Math.PI / 2;
+                        const mercatorScale = 1.0 / Math.cos(latRad);
+                        // True pixel size = magnitude of column vector / mercator scale
+                        const pixelMercator = Math.sqrt(A*A + D*D);
+                        const realPixelM = pixelMercator / mercatorScale;
+                        feetPerPixel = realPixelM * 3.28084;
+                        console.log('World file: Web Mercator, lat', (latRad*180/Math.PI).toFixed(2), 'mercatorScale', mercatorScale.toFixed(4), 'ft/px', feetPerPixel.toFixed(4));
+                    } else {
+                        // Geographic (WGS84 degrees)
+                        const R = 6378137.0;
+                        const latRad = 2 * Math.atan(Math.exp(F / R)) - Math.PI / 2;
+                        const pixelDeg = Math.sqrt(A*A + D*D);
+                        feetPerPixel = pixelDeg * 111320 * 3.28084;
+                        console.log('World file: geographic degrees, ft/px', feetPerPixel.toFixed(4));
+                    }
+                    
+                    window.IMAGE_SCALE = feetPerPixel;
+                    dropzoneImage = img;
+                    useImageBackground = true;
+                } catch (error) {
+                    console.error('PGW parsing error:', error);
+                    openMeasurementModal();
+                }
+            };
+            reader.readAsText(pgwFile);
+        }
+        
+        function openMeasurementModal() {
+            measureCanvas = document.getElementById('measureCanvas');
+            measureCtx = measureCanvas.getContext('2d');
+            measurementPoints = [];
+            
+            // Set canvas size to image size (but limit to reasonable display size)
+            const maxSize = 800;
+            let displayWidth = measurementImage.width;
+            let displayHeight = measurementImage.height;
+            
+            if (displayWidth > maxSize || displayHeight > maxSize) {
+                const scale = maxSize / Math.max(displayWidth, displayHeight);
+                displayWidth *= scale;
+                displayHeight *= scale;
+            }
+            
+            measureCanvas.width = measurementImage.width;
+            measureCanvas.height = measurementImage.height;
+            measureCanvas.style.width = displayWidth + 'px';
+            measureCanvas.style.height = displayHeight + 'px';
+            
+            drawMeasurementCanvas();
+            
+            document.getElementById('measurementModal').style.display = 'flex';
+            document.getElementById('measureResult').style.display = 'none';
+            document.getElementById('measureDistance').value = '';
+        }
+        
+        function drawMeasurementCanvas() {
+            if (!measurementImage) return;
+            
+            measureCtx.drawImage(measurementImage, 0, 0);
+            
+            // Draw points
+            measurementPoints.forEach((point, index) => {
+                measureCtx.fillStyle = '#ff0000';
+                measureCtx.beginPath();
+                measureCtx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+                measureCtx.fill();
+                
+                measureCtx.fillStyle = 'white';
+                measureCtx.font = 'bold 16px Arial';
+                measureCtx.textAlign = 'center';
+                measureCtx.textBaseline = 'middle';
+                measureCtx.fillText(index + 1, point.x, point.y);
+            });
+            
+            // Draw line
+            if (measurementPoints.length === 2) {
+                measureCtx.strokeStyle = '#ff0000';
+                measureCtx.lineWidth = 4;
+                measureCtx.beginPath();
+                measureCtx.moveTo(measurementPoints[0].x, measurementPoints[0].y);
+                measureCtx.lineTo(measurementPoints[1].x, measurementPoints[1].y);
+                measureCtx.stroke();
+                
+                // Show pixel length
+                const dx = measurementPoints[1].x - measurementPoints[0].x;
+                const dy = measurementPoints[1].y - measurementPoints[0].y;
+                const lengthPx = Math.sqrt(dx * dx + dy * dy);
+                
+                const midX = (measurementPoints[0].x + measurementPoints[1].x) / 2;
+                const midY = (measurementPoints[0].y + measurementPoints[1].y) / 2;
+                
+                measureCtx.fillStyle = 'white';
+                measureCtx.fillRect(midX - 50, midY - 18, 100, 36);
+                measureCtx.strokeStyle = '#ff0000';
+                measureCtx.lineWidth = 2;
+                measureCtx.strokeRect(midX - 50, midY - 18, 100, 36);
+                
+                measureCtx.fillStyle = '#ff0000';
+                measureCtx.font = 'bold 16px Arial';
+                measureCtx.textAlign = 'center';
+                measureCtx.textBaseline = 'middle';
+                measureCtx.fillText(Math.round(lengthPx) + ' px', midX, midY);
+            }
+        }
+        
+        // Handle clicks on measurement canvas
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('measureCanvas');
+            if (canvas) {
+                canvas.addEventListener('click', (e) => {
+                    if (!measurementImage) return;
+                    
+                    if (measurementPoints.length >= 2) {
+                        measurementPoints = [];
+                    }
+                    
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    const x = (e.clientX - rect.left) * scaleX;
+                    const y = (e.clientY - rect.top) * scaleY;
+                    
+                    measurementPoints.push({x, y});
+                    drawMeasurementCanvas();
+                });
+            }
+        });
+        
+        function clearMeasurement() {
+            measurementPoints = [];
+            drawMeasurementCanvas();
+            document.getElementById('measureResult').style.display = 'none';
+        }
+        
+        function applyScale() {
+            if (measurementPoints.length < 2) {
+                alert('Please mark both ends of the distance first!');
+                return;
+            }
+            
+            const distanceFeet = parseFloat(document.getElementById('measureDistance').value);
+            if (!distanceFeet || distanceFeet <= 0) {
+                alert('Please enter a valid distance in feet!');
+                return;
+            }
+            
+            const dx = measurementPoints[1].x - measurementPoints[0].x;
+            const dy = measurementPoints[1].y - measurementPoints[0].y;
+            const lengthPx = Math.sqrt(dx * dx + dy * dy);
+            
+            const feetPerPixel = distanceFeet / lengthPx;
+            
+            // Update the global IMAGE_SCALE
+            window.IMAGE_SCALE = feetPerPixel;
+            
+            // Set the dropzone image
+            dropzoneImage = measurementImage;
+            useImageBackground = true; // Auto-enable satellite mode
+            
+            // Show result
+            const resultDiv = document.getElementById('measureResult');
+            resultDiv.style.display = 'block';
+            resultDiv.querySelector('p').textContent = `✓ Scale calibrated! ${Math.round(lengthPx)} pixels = ${distanceFeet} feet (${feetPerPixel.toFixed(2)} ft/px)`;
+            
+            // Close modal after 1 second
+            setTimeout(() => {
+                closeMeasurement();
+            }, 1000);
+        }
+        
+        function closeMeasurement() {
+            document.getElementById('measurementModal').style.display = 'none';
+            measurementImage = null;
+            measurementPoints = [];
+        }
+        
+        // Game state
+        let gameState = {
+            running: false,
+            setupPhase: 'ready',
+            reviewMode: false, // Start in ready state - can adjust and press space
+            altitude: 1000, // feet AGL
+            x: 1000, // center of canvas
+            y: 400, // centered vertically
+            heading: 180, // degrees (0 = North, 90 = East, 180 = South)
+            exitWeight: 200, // lbs
+            canopySize: 260, // sqft
+            windSpeed: 0, // knots
+            windDirection: 90, // degrees
+            targetX: 1000, // center horizontally
+            targetY: 600, // slightly below center
+            targetRadius: 13, // 3x smaller than before (was 40)
+            path: [],
+            glideRatio: 3, // 3:1 glide ratio
+            currentLeg: 'Downwind',
+            startX: 1000,
+            startY: 400, // match centered position
+            landingX: null,
+            landingY: null,
+            landingDistance: null,
+            dragging: null, // 'target', 'start', 'wind', or null
+            dragOffsetX: 0,
+            dragOffsetY: 0,
+            windControlX: 200, // Wind control position on canvas - moved to better position
+            windControlY: 200,
+            zoom: 1.0, // Zoom level (0.5 to 2.0)
+            keysPressed: {}, // Track which keys are currently held
+            lastUpdateTime: Date.now(), // For smooth turning
+            viewOffsetX: 0, // For dragging view after landing
+            viewOffsetY: 0,
+            viewRotation: 0, // For rotating the view in setup mode
+            isDraggingView: false
+        };
+        
+        // Calculate canopy speed based on wing loading
+        // At 1 lb/sqft, speed = 25 knots
+        // Speed scales with square root of wing loading
+        function getCanopySpeed() {
+            const wingLoading = gameState.exitWeight / gameState.canopySize; // lb/sqft
+            const baseSpeed = 25; // knots at 1 lb/sqft
+            return baseSpeed * Math.sqrt(wingLoading);
+        }
+        
+        // Store last setup for "Try Again"
+        let lastSetup = {
+            startX: 1000,
+            startY: 400,
+            targetX: 1000,
+            targetY: 600,
+            heading: 180,
+            windSpeed: 4,
+            windDirection: 90,
+            exitWeight: 175,
+            canopySize: 150
+        };
+        
+        const SCALE = 1.75; // pixels per 10 feet (so 35 pixels = 200 feet)
+        
+        // Input handlers for sliders
+        
+        
+        
+        function zoomIn() {
+            const minZoom = getMinZoom();
+            const oldZoomTarget = zoomTarget;
+            zoomTarget = Math.max(minZoom, Math.min(120.0, zoomTarget * 1.2));
+            
+            // Zoom towards center
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const zoomRatio = zoomTarget / oldZoomTarget;
+            
+            if (!gameState.running) {
+                gameState.viewOffsetX += (centerX - centerX) * (1 - 1/zoomRatio) / gameState.zoom;
+                gameState.viewOffsetY += (centerY - centerY) * (1 - 1/zoomRatio) / gameState.zoom;
+            }
+            
+            if (zoomAnimFrame) cancelAnimationFrame(zoomAnimFrame);
+            zoomAnimFrame = requestAnimationFrame(animateZoom);
+        }
+        
+        function zoomOut() {
+            const minZoom = getMinZoom();
+            const oldZoomTarget = zoomTarget;
+            zoomTarget = Math.max(minZoom, Math.min(120.0, zoomTarget / 1.2));
+            
+            // Zoom towards center
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const zoomRatio = zoomTarget / oldZoomTarget;
+            
+            if (!gameState.running) {
+                gameState.viewOffsetX += (centerX - centerX) * (1 - 1/zoomRatio) / gameState.zoom;
+                gameState.viewOffsetY += (centerY - centerY) * (1 - 1/zoomRatio) / gameState.zoom;
+            }
+            
+            if (zoomAnimFrame) cancelAnimationFrame(zoomAnimFrame);
+            zoomAnimFrame = requestAnimationFrame(animateZoom);
+        }
+        
+        // Disable/enable sliders during flight/review
+        function updateSliderState() {
+            const disabled = gameState.running || gameState.reviewMode;
+            document.getElementById('weight-slider').disabled = disabled;
+            document.getElementById('canopy-slider').disabled = disabled;
+            if (disabled) {
+                document.getElementById('weight-slider').style.opacity = '0.5';
+                document.getElementById('canopy-slider').style.opacity = '0.5';
+            } else {
+                document.getElementById('weight-slider').style.opacity = '1';
+                document.getElementById('canopy-slider').style.opacity = '1';
+            }
+        }
+        
+
+        // Update weight display consistently based on current unit
+        function updateWeightDisplay() {
+            const slider = document.getElementById('weight-slider');
+            const display = document.getElementById('weight-display');
+            if (weightUnit === 'kg') {
+                const kg = Math.round(gameState.exitWeight / 2.20462);
+                slider.value = kg;
+                display.textContent = kg;
+            } else {
+                slider.value = gameState.exitWeight;
+                display.textContent = gameState.exitWeight;
+            }
+        }
+
+        // Weight unit conversion
+        let weightUnit = 'lbs';
+        
+        function setWeightUnit(unit) {
+            if (gameState.reviewMode || gameState.running) return;
+            const slider = document.getElementById('weight-slider');
+            const unitLabel = document.getElementById('weight-unit');
+            const lbsBtn = document.getElementById('weight-lbs-btn');
+            const kgBtn = document.getElementById('weight-kg-btn');
+            
+            if (unit === weightUnit) return;
+            
+            weightUnit = unit;
+            if (unit === 'kg') {
+                slider.min = Math.round(100 / 2.20462);
+                slider.max = Math.round(250 / 2.20462);
+                unitLabel.textContent = 'kg';
+                lbsBtn.style.background = '#ddd'; lbsBtn.style.color = '#666';
+                kgBtn.style.background = '#28a745'; kgBtn.style.color = 'white';
+            } else {
+                slider.min = 100;
+                slider.max = 250;
+                unitLabel.textContent = 'lbs';
+                lbsBtn.style.background = '#28a745'; lbsBtn.style.color = 'white';
+                kgBtn.style.background = '#ddd'; kgBtn.style.color = '#666';
+            }
+            // gameState.exitWeight is always in lbs - just update display
+            updateWeightDisplay();
+        }
+        
+        document.getElementById('weight-slider').addEventListener('input', (e) => {
+            if (gameState.reviewMode || gameState.running) return;
+            if (!gameState.running) {
+                const value = parseInt(e.target.value);
+                // Always store internally in lbs
+                gameState.exitWeight = weightUnit === 'kg' ? Math.round(value * 2.20462) : value;
+                document.getElementById('weight-display').textContent = value;
+                hideTryAgain();
+            } else {
+                updateWeightDisplay();
+            }
+        });
+        
+        document.getElementById('canopy-slider').addEventListener('input', (e) => {
+            if (gameState.reviewMode || gameState.running) return;
+            if (!gameState.running) {
+                gameState.canopySize = parseInt(e.target.value);
+                document.getElementById('canopy-display').textContent = e.target.value;
+                hideTryAgain();
+            } else {
+                e.target.value = gameState.canopySize;
+            }
+        });
+        
+        function getWindDirectionName(deg) {
+            const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+            const index = Math.round(deg / 45) % 8;
+            return directions[index];
+        }
+        
+        // Convert screen coordinates to world coordinates (accounting for zoom)
+        function screenToWorld(screenX, screenY) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Inverse of the zoom transformation
+            let worldX = (screenX - centerX) / gameState.zoom + centerX;
+            let worldY = (screenY - centerY) / gameState.zoom + centerY;
+            
+            // Account for view offset (panning)
+            worldX -= gameState.viewOffsetX;
+            worldY -= gameState.viewOffsetY;
+            
+            return {x: worldX, y: worldY};
+        }
+        
+        // Mouse handlers for dragging
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+            
+            if (gameState.running) return;
+            
+            // Convert to world coordinates for checking objects
+            const world = screenToWorld(mouseX, mouseY);
+            const worldX = world.x;
+            const worldY = world.y;
+            
+            // During review mode, allow only view dragging (skip all icon checks)
+            if (gameState.reviewMode) {
+                gameState.isDraggingView = true;
+                gameState.dragStartX = mouseX;
+                gameState.dragStartY = mouseY;
+                return;
+            }
+            
+            // Check if clicking on starting point (parachute) - FIRST PRIORITY
+            const distToStart = Math.sqrt(
+                Math.pow(worldX - gameState.x, 2) + 
+                Math.pow(worldY - gameState.y, 2)
+            );
+            if (distToStart <= 15 / gameState.zoom) { // Scale hit detection with zoom
+                gameState.dragging = 'start';
+                gameState.dragOffsetX = worldX - gameState.x;
+                gameState.dragOffsetY = worldY - gameState.y;
+                return;
+            }
+            
+            // Check if clicking on target - SECOND PRIORITY
+            const distToTarget = Math.sqrt(
+                Math.pow(worldX - gameState.targetX, 2) + 
+                Math.pow(worldY - gameState.targetY, 2)
+            );
+            if (distToTarget <= (gameState.targetRadius + 10) / gameState.zoom) { // Scale hit detection with zoom
+                gameState.dragging = 'target';
+                gameState.dragOffsetX = worldX - gameState.targetX;
+                gameState.dragOffsetY = worldY - gameState.targetY;
+                return;
+            }
+            
+            // Check wind control (after checking parachute and target)
+            const distToWindCenter = Math.sqrt(
+                Math.pow(worldX - gameState.windControlX, 2) + 
+                Math.pow(worldY - gameState.windControlY, 2)
+            );
+            
+            // Check if clicking very close to windsock center (reset wind to 0)
+            if (distToWindCenter <= 8 / gameState.zoom) {
+                gameState.windSpeed = 0;
+                draw();
+                return;
+            }
+            
+            // Check if clicking on wind control area to set wind (SMALLER RADIUS)
+            if (distToWindCenter <= 60 / gameState.zoom) {
+                gameState.dragging = 'wind';
+                return;
+            }
+            
+            // If not clicking on any object, allow dragging the view (especially useful with satellite)
+            gameState.isDraggingView = true;
+            gameState.dragStartX = mouseX;
+            gameState.dragStartY = mouseY;
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+            
+            // Handle view dragging (post-landing review mode)
+            if (gameState.isDraggingView) {
+                const dx = mouseX - gameState.dragStartX;
+                const dy = mouseY - gameState.dragStartY;
+                gameState.viewOffsetX += dx;
+                gameState.viewOffsetY += dy;
+                gameState.dragStartX = mouseX;
+                gameState.dragStartY = mouseY;
+                return;
+            }
+            
+            if (!gameState.dragging || gameState.running) return;
+            
+            // Convert to world coordinates
+            const world = screenToWorld(mouseX, mouseY);
+            const worldX = world.x;
+            const worldY = world.y;
+            
+            if (gameState.dragging === 'wind') {
+                // Calculate direction from wind control center to mouse
+                const dx = worldX - gameState.windControlX;
+                const dy = worldY - gameState.windControlY;
+                
+                // Calculate angle (0 = North, clockwise)
+                let angle = Math.atan2(dx, -dy) * 180 / Math.PI;
+                if (angle < 0) angle += 360;
+                gameState.windDirection = Math.round(angle);
+                
+                // Calculate speed based on distance - 10px per 5 knots (max 50px for 25 knots) - more sensitive
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                gameState.windSpeed = Math.min(25, Math.max(0, Math.round(distance / 10 * 5)));
+                
+                hideTryAgain();
+                // No draw() call - updateGame loop handles it
+            } else if (gameState.dragging === 'target') {
+                gameState.targetX = worldX - gameState.dragOffsetX;
+                gameState.targetY = worldY - gameState.dragOffsetY;
+                hideTryAgain();
+                // No draw() call - updateGame loop handles it
+            } else if (gameState.dragging === 'start') {
+                gameState.x = worldX - gameState.dragOffsetX;
+                gameState.y = worldY - gameState.dragOffsetY;
+                gameState.startX = gameState.x;
+                gameState.startY = gameState.y;
+                hideTryAgain();
+                // No draw() call - updateGame loop handles it
+            }
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            gameState.dragging = null;
+            gameState.isDraggingView = false;
+        });
+        
+        // Mouse wheel zoom
+        // Smooth zoom with momentum
+        let zoomTarget = 1.0;
+        
+
+        // Icon positions stored as image pixel coordinates (stable across all browsers/canvas sizes)
+        const ICON_IMG_PX = {
+            windControl: { x: 8678.30, y: 3293.37 },
+            target:      { x: 9054.91, y: 3883.02 },
+            start:       { x: 8946.62, y: 4159.42 }
+        };
+        
+        // Convert image pixel coords to world coords (depends on current canvas size)
+        function imgPxToWorld(imgX, imgY) {
+            const scaleRatio = window.IMAGE_SCALE / (200 / 35);
+            const scaledW = 16306 * scaleRatio;
+            const scaledH = 10972 * scaleRatio;
+            const offsetX = (canvas.width - scaledW) / 2;
+            const offsetY = (canvas.width - scaledH) / 2;
+            return {
+                x: offsetX + imgX * scaleRatio,
+                y: offsetY + imgY * scaleRatio
+            };
+        }
+        
+        // Set all icon world positions from image pixel coords
+        function setIconPositions() {
+            const wc = imgPxToWorld(ICON_IMG_PX.windControl.x, ICON_IMG_PX.windControl.y);
+            const tg = imgPxToWorld(ICON_IMG_PX.target.x, ICON_IMG_PX.target.y);
+            const st = imgPxToWorld(ICON_IMG_PX.start.x, ICON_IMG_PX.start.y);
+            gameState.windControlX = wc.x;
+            gameState.windControlY = wc.y;
+            gameState.targetX = tg.x;
+            gameState.targetY = tg.y;
+            gameState.x = st.x;
+            gameState.y = st.y;
+            gameState.startX = st.x;
+            gameState.startY = st.y;
+            lastSetup.targetX = tg.x;
+            lastSetup.targetY = tg.y;
+            lastSetup.startX = st.x;
+            lastSetup.startY = st.y;
+        }
+
+        // Size the canvas immediately before setting icon positions
+        // so the initial resizeCanvas call sees delta=0 and doesn't shift them
+        resizeCanvas();
+        
+        // Set icon positions and view immediately - consistent across all browsers
+        setIconPositions();  // Will be called again with correct IMAGE_SCALE after image loads
+        gameState.windSpeed = 0;
+        gameState.zoom = 1.2594316250178554;
+        zoomTarget = 1.2594316250178554;
+        gameState.viewOffsetX = -162.20990643339792;
+        gameState.viewOffsetY = 279.35711947091096;
+        let zoomAnimFrame = null;
+        
+        function animateZoom() {
+            const minZoom = getMinZoom();
+            // Always clamp target in case minZoom changed
+            zoomTarget = Math.max(minZoom, Math.min(120.0, zoomTarget));
+            const diff = zoomTarget - gameState.zoom;
+            if (Math.abs(diff) < 0.0005) {
+                gameState.zoom = zoomTarget;
+                zoomAnimFrame = null;
+                draw();
+                return;
+            }
+            gameState.zoom += diff * 0.18;
+            draw();
+            zoomAnimFrame = requestAnimationFrame(animateZoom);
+        }
+        
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            const delta = -Math.min(Math.max(e.deltaY, -100), 100);
+            const zoomFactor = 1 + delta * 0.001;
+            
+            const minZoom = getMinZoom();
+            const oldZoomTarget = zoomTarget;
+            zoomTarget = Math.max(minZoom, Math.min(4.0, zoomTarget * zoomFactor));
+            
+            // Zoom towards mouse cursor
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            const zoomRatio = zoomTarget / oldZoomTarget;
+            gameState.viewOffsetX += (mouseX - centerX) * (1 - 1/zoomRatio) / gameState.zoom;
+            gameState.viewOffsetY += (mouseY - centerY) * (1 - 1/zoomRatio) / gameState.zoom;
+            
+            // Cancel any existing animation and restart
+            if (zoomAnimFrame) cancelAnimationFrame(zoomAnimFrame);
+            zoomAnimFrame = requestAnimationFrame(animateZoom);
+        }, { passive: false });
+        
+        // Touch gesture zoom (pinch)
+        let lastTouchDistance = null;
+        
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const dx = touch2.clientX - touch1.clientX;
+                const dy = touch2.clientY - touch1.clientY;
+                lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
+            }
+        }, { passive: false });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && lastTouchDistance) {
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const dx = touch2.clientX - touch1.clientX;
+                const dy = touch2.clientY - touch1.clientY;
+                const currentDistance = Math.sqrt(dx * dx + dy * dy);
+                
+                const distanceChange = currentDistance - lastTouchDistance;
+                const zoomChange = distanceChange * 0.01;
+                
+                gameState.zoom = Math.max(getMinZoom(), Math.min(120.0, gameState.zoom + zoomChange));
+                lastTouchDistance = currentDistance;
+            }
+        }, { passive: false });
+        
+        canvas.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) {
+                lastTouchDistance = null;
+            }
+        });
+        
+        // Keyboard controls - track key state
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                gameState.keysPressed[e.key] = true;
+            } else if (e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                if (gameState.setupPhase === 'ready' && !gameState.running && !gameState.reviewMode) {
+                    startJump();
+                }
+            } else if (e.key === '=' || e.key === '+') {
+                e.preventDefault();
+                zoomIn();
+            } else if (e.key === '-' || e.key === '_') {
+                e.preventDefault();
+                zoomOut();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                gameState.keysPressed[e.key] = false;
+            }
+        });
+        
+        // Main update loop - handles both turning and physics
+        function updateGame() {
+            const now = Date.now();
+            const deltaTime = (now - gameState.lastUpdateTime) / 1000; // seconds
+            gameState.lastUpdateTime = now;
+            
+            // Handle turning
+            if ((gameState.running || gameState.setupPhase === 'ready') && !gameState.reviewMode) {
+                const turnRate = gameState.running ? 30 : 90;
+                
+                if (gameState.keysPressed['ArrowLeft']) {
+                    gameState.heading -= turnRate * deltaTime;
+                    if (gameState.heading < 0) gameState.heading += 360;
+                    if (!gameState.running) hideTryAgain();
+                }
+                if (gameState.keysPressed['ArrowRight']) {
+                    gameState.heading += turnRate * deltaTime;
+                    if (gameState.heading >= 360) gameState.heading -= 360;
+                    if (!gameState.running) hideTryAgain();
+                }
+            }
+            
+            // Handle flight physics
+            if (gameState.running) {
+                // Get current canopy speed based on wing loading
+                const canopySpeed = getCanopySpeed();
+                
+                // Calculate descent rate based on glide ratio
+                const canopySpeedFeetPerSec = canopySpeed * 1.688;
+                const descentRate = canopySpeedFeetPerSec / gameState.glideRatio;
+                
+                // Descent
+                gameState.altitude -= descentRate * deltaTime;
+                
+                // Calculate velocities
+                const canopyVx = Math.sin(gameState.heading * Math.PI / 180) * canopySpeed;
+                const canopyVy = -Math.cos(gameState.heading * Math.PI / 180) * canopySpeed;
+                
+                const windVx = Math.sin(gameState.windDirection * Math.PI / 180) * gameState.windSpeed;
+                const windVy = -Math.cos(gameState.windDirection * Math.PI / 180) * gameState.windSpeed;
+                
+                const groundVx = canopyVx + windVx;
+                const groundVy = canopyVy + windVy;
+                
+                // Update position
+                const feetMoved = (groundVx * 1.688 * deltaTime);
+                gameState.x += feetMoved * SCALE / 10;
+                
+                const feetMovedY = (groundVy * 1.688 * deltaTime);
+                gameState.y += feetMovedY * SCALE / 10;
+                
+                // Add to path periodically
+                if (!gameState.lastPathTime || now - gameState.lastPathTime > 200) {
+                    gameState.path.push({x: gameState.x, y: gameState.y, altitude: gameState.altitude});
+                    gameState.lastPathTime = now;
+                    updateLeg();
+                }
+                
+                // Update stats periodically
+                if (!gameState.lastStatsUpdate || now - gameState.lastStatsUpdate > 100) {
+                    updateStats();
+                    gameState.lastStatsUpdate = now;
+                }
+                
+                // Check if landed
+                if (gameState.altitude <= 0) {
+                    gameState.running = false;
+                    gameState.altitude = 0;
+                    checkLanding();
+                    // Don't return - let the loop continue for next launch
+                }
+            }
+            
+            // Draw on every frame
+            draw();
+            
+            requestAnimationFrame(updateGame);
+        }
+        
+        // Start the main update loop
+        updateGame();
+        
+        function updateStatusMessage(msg) {
+            // Status message element removed - function kept for compatibility
+        }
+        
+        function startJump() {
+            // Save current setup for "Try Again"
+            lastSetup.startX = gameState.startX;
+            lastSetup.startY = gameState.startY;
+            lastSetup.targetX = gameState.targetX;
+            lastSetup.targetY = gameState.targetY;
+            lastSetup.heading = gameState.heading;
+            lastSetup.windSpeed = gameState.windSpeed;
+            lastSetup.windDirection = gameState.windDirection;
+            lastSetup.exitWeight = gameState.exitWeight;
+            lastSetup.canopySize = gameState.canopySize;
+            
+            gameState.running = true;
+            updateSliderState();
+            gameState.altitude = 1000;
+            gameState.x = gameState.startX;
+            gameState.y = gameState.startY;
+            gameState.path = [{x: gameState.x, y: gameState.y, altitude: 1000}];
+            gameState.landingX = null;
+            gameState.landingY = null;
+            gameState.landingDistance = null;
+            showTryAgain();
+            gameState.lastUpdateTime = Date.now(); // Reset for smooth turning
+            gameState.lastPathTime = null; // Reset path timing
+            gameState.lastStatsUpdate = null; // Reset stats timing
+            gameState.viewOffsetX = 0; // Reset view offset
+            gameState.viewOffsetY = 0;
+            document.getElementById('result').innerHTML = '';
+            updateStatusMessage('');
+            // updateGame loop is already running
+        }
+        
+        async function toggleFullscreen() {
+            try {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+                    // Enter fullscreen
+                    const elem = document.documentElement;
+                    if (elem.requestFullscreen) {
+                        await elem.requestFullscreen();
+                    } else if (elem.webkitRequestFullscreen) { // Safari
+                        await elem.webkitRequestFullscreen();
+                    } else if (elem.mozRequestFullScreen) { // Firefox
+                        await elem.mozRequestFullScreen();
+                    } else if (elem.msRequestFullscreen) { // IE11
+                        await elem.msRequestFullscreen();
+                    }
+                } else {
+                    // Exit fullscreen
+                    if (document.exitFullscreen) {
+                        await document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) { // Safari
+                        await document.webkitExitFullscreen();
+                    } else if (document.mozCancelFullScreen) { // Firefox
+                        await document.mozCancelFullScreen();
+                    } else if (document.msExitFullscreen) { // IE11
+                        await document.msExitFullscreen();
+                    }
+                }
+            } catch (err) {
+                console.error('Fullscreen error:', err);
+                alert('Fullscreen not supported or blocked by browser. Try F11 instead.');
+            }
+        }
+        
+        function showTryAgain() {
+            document.getElementById('try-again-btn').style.display = 'block';
+        }
+        function hideTryAgain() {
+            document.getElementById('try-again-btn').style.display = 'none';
+        }
+
+        function tryAgain() {
+            gameState.running = false;
+            gameState.setupPhase = 'ready';
+            gameState.reviewMode = false;
+            updateSliderState();
+            gameState.altitude = 1000;
+            hideTryAgain();
+            
+            // Restore last setup
+            gameState.x = lastSetup.startX;
+            gameState.y = lastSetup.startY;
+            gameState.startX = lastSetup.startX;
+            gameState.startY = lastSetup.startY;
+            gameState.targetX = lastSetup.targetX;
+            gameState.targetY = lastSetup.targetY;
+            gameState.heading = lastSetup.heading;
+            gameState.windSpeed = lastSetup.windSpeed;
+            gameState.windDirection = lastSetup.windDirection;
+            gameState.exitWeight = lastSetup.exitWeight;
+            gameState.canopySize = lastSetup.canopySize;
+            
+            // Restore initial zoomed view
+            gameState.zoom = 1.2594316250178554;
+            zoomTarget = 1.2594316250178554;
+            gameState.viewOffsetX = -162.20990643339792;
+            gameState.viewOffsetY = 279.35711947091096;
+            
+            // Update slider displays
+            updateWeightDisplay();
+            document.getElementById('canopy-slider').value = gameState.canopySize;
+            document.getElementById('canopy-display').textContent = gameState.canopySize;
+            
+            gameState.path = [];
+            gameState.landingX = null;
+            gameState.landingY = null;
+            gameState.landingDistance = null;
+            gameState.dragging = null;
+            document.getElementById('result').innerHTML = '';
+            updateStatusMessage('Same setup - press SPACE to launch');
+            updateStats();
+            draw();
+        }
+        
+        function toggleBackground() {
+            useImageBackground = !useImageBackground;
+            if (useImageBackground && !dropzoneImage) {
+                alert('Dropzone image still loading... please wait a moment');
+                useImageBackground = false;
+            } else if (useImageBackground) {
+                gameState.zoom = getMinZoom();
+                zoomTarget = gameState.zoom;
+            } else {
+                gameState.zoom = 1.0;
+                zoomTarget = 1.0;
+            }
+        }
+        
+        function resetGame() {
+            gameState.running = false;
+            gameState.setupPhase = 'ready';
+            gameState.reviewMode = false;
+            updateSliderState();
+            gameState.altitude = 1000;
+            // Restore custom positions
+            gameState.windControlX = 416.01702191326484;
+            gameState.windControlY = -61.182365541754365;
+            gameState.targetX = 478.5488247019331;
+            gameState.targetY = 47.596862546993776;
+            gameState.x = 479.7326444246767;
+            gameState.y = 92.06136453947482;
+            gameState.startX = 479.7326444246767;
+            gameState.startY = 92.06136453947482;
+            gameState.windSpeed = 0;
+            gameState.targetRadius = 13;
+            gameState.heading = 180;
+            // Restore custom view
+            gameState.zoom = 1.2594316250178554;
+            zoomTarget = 1.2594316250178554;
+            gameState.viewOffsetX = -162.20990643339792;
+            gameState.viewOffsetY = 279.35711947091096;
+            // Don't reset exitWeight or canopySize — user keeps their equipment settings
+            gameState.path = [];
+            gameState.landingX = null;
+            gameState.landingY = null;
+            gameState.landingDistance = null;
+            gameState.dragging = null;
+            
+            document.getElementById('result').innerHTML = '';
+            hideTryAgain();
+            updateStatusMessage('Drag target and start point, use ← → for heading, SPACE to launch');
+            updateStats();
+            draw();
+        }
+        
+        function updateLeg() {
+            const toTarget = Math.sqrt(
+                Math.pow(gameState.targetX - gameState.x, 2) + 
+                Math.pow(gameState.targetY - gameState.y, 2)
+            ) / SCALE * 10;
+            
+            if (gameState.altitude > 700) {
+                gameState.currentLeg = 'Downwind';
+            } else if (gameState.altitude > 400) {
+                gameState.currentLeg = 'Base';
+            } else {
+                gameState.currentLeg = 'Final';
+            }
+        }
+        
+        function checkLanding() {
+            const distance = Math.sqrt(
+                Math.pow(gameState.targetX - gameState.x, 2) + 
+                Math.pow(gameState.targetY - gameState.y, 2)
+            );
+            
+            // Save landing position
+            gameState.landingX = gameState.x;
+            gameState.landingY = gameState.y;
+            gameState.landingDistance = Math.round(distance / SCALE * 10);
+            
+            // Enter review mode - lock everything except map dragging/zooming
+            gameState.reviewMode = true;
+            updateSliderState();
+            document.getElementById('result').innerHTML = '';
+            showTryAgain();
+            
+            // Center view on landing X, zoomed to show 2500x2500 ft area
+            // SCALE = 1.75 world-units per 10ft, so 1ft = SCALE/10 world-units
+            // 2500ft = 2500 * SCALE/10 world-units
+            const viewSizeFt = 2500;
+            const viewSizeWorld = viewSizeFt * SCALE / 10;
+            const targetZoom = Math.min(canvas.width, canvas.height) / viewSizeWorld;
+            
+            gameState.zoom = targetZoom;
+            zoomTarget = targetZoom;
+            
+            // Transform is: screenX = (worldX + viewOffsetX - centerX) * zoom + centerX
+            // For landingX to appear at screen center: viewOffsetX = centerX - landingX
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            gameState.viewOffsetX = centerX - gameState.landingX;
+            gameState.viewOffsetY = centerY - gameState.landingY;
+            
+            // Reset to setup phase and starting position
+            gameState.setupPhase = 'ready';
+            gameState.altitude = 1000;
+            gameState.x = gameState.startX;
+            gameState.y = gameState.startY;
+            updateStatusMessage('Drag target and start point, use ← → for heading, SPACE to launch');
+            draw();
+        }
+        
+        function updateStats() {
+            // Stats display removed - function kept for compatibility
+        }
+        
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#e8f4f8';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Save context for zoom and rotation
+            ctx.save();
+            
+            // Apply zoom transformation first
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            if (gameState.running) {
+                // During flight: zoom around parachute, then rotate
+                ctx.translate(centerX, centerY);
+                ctx.scale(gameState.zoom, gameState.zoom);
+                ctx.translate(-centerX, -centerY);
+                
+                // Then apply first-person rotation
+                ctx.translate(centerX, centerY);
+                ctx.rotate(-gameState.heading * Math.PI / 180);
+                ctx.translate(-gameState.x, -gameState.y);
+            } else {
+                // During setup/post-landing: zoom around center and apply view offset
+                ctx.translate(centerX, centerY);
+                ctx.scale(gameState.zoom, gameState.zoom);
+                ctx.translate(-centerX, -centerY);
+                
+                // Apply view offset (for dragging after landing)
+                ctx.translate(gameState.viewOffsetX, gameState.viewOffsetY);
+            }
+            
+            // Draw satellite image or grid FIRST (as background)
+            if (useImageBackground && dropzoneImage) {
+                ctx.imageSmoothingEnabled = false;
+                // Scale image to match real-world distances
+                // Image: 17.68 ft/pixel, Game: 5.71 ft/pixel
+                // Scale factor: 17.68 / 5.71 = 3.096
+                const scaleRatio = window.IMAGE_SCALE / (200 / 35); // Dynamic scale from measurement
+                const scaledWidth = dropzoneImage.width * scaleRatio;
+                const scaledHeight = dropzoneImage.height * scaleRatio;
+                
+                // Center the image on canvas (it's bigger than 700x700)
+                const offsetX = (canvas.width - scaledWidth) / 2;
+                const offsetY = (canvas.height - scaledHeight) / 2;
+                
+                ctx.drawImage(dropzoneImage, offsetX, offsetY, scaledWidth, scaledHeight);
+                ctx.imageSmoothingEnabled = true;
+            } else {
+                // Draw grid (infinite, each square = 200x200 ft)
+                ctx.strokeStyle = '#ccc';
+                ctx.lineWidth = 1;
+                const gridSize = 35; // 200 feet = 35 pixels
+                
+                // Calculate visible area accounting for zoom
+                const zoomFactor = 1 / gameState.zoom;
+                const visibleWidth = canvas.width * zoomFactor;
+                const visibleHeight = canvas.height * zoomFactor;
+                
+                let gridOriginX, gridOriginY;
+                
+                if (gameState.running) {
+                    // During flight: grid is centered on parachute in world coords
+                    gridOriginX = gameState.x;
+                    gridOriginY = gameState.y;
+                } else {
+                    // During setup: grid is centered on canvas center
+                    gridOriginX = canvas.width / 2;
+                    gridOriginY = canvas.height / 2;
+                }
+                
+                // Find where to start drawing grid lines
+                const startX = Math.floor((gridOriginX - visibleWidth / 2) / gridSize) * gridSize;
+                const endX = Math.ceil((gridOriginX + visibleWidth / 2) / gridSize) * gridSize;
+                const startY = Math.floor((gridOriginY - visibleHeight / 2) / gridSize) * gridSize;
+                const endY = Math.ceil((gridOriginY + visibleHeight / 2) / gridSize) * gridSize;
+                
+                // Draw vertical lines
+                for (let x = startX; x <= endX; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, startY - gridSize);
+                    ctx.lineTo(x, endY + gridSize);
+                    ctx.stroke();
+                }
+                
+                // Draw horizontal lines
+                for (let y = startY; y <= endY; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(startX - gridSize, y);
+                    ctx.lineTo(endX + gridSize, y);
+                    ctx.stroke();
+                }
+            }
+            
+            // Draw windsock (during setup: draggable at windControlX/Y, during flight: near target)
+            const drawWindsock = (wx, wy, draggable) => {
+                // Scale windsock to maintain constant screen size
+                const scale = 1 / gameState.zoom;
+                
+                if (gameState.windSpeed === 0) {
+                    // Circle when no wind (top-down view of limp windsock)
+                    ctx.fillStyle = '#ff6b00';
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 2 * scale;
+                    ctx.beginPath();
+                    ctx.arc(wx, wy, 12 * scale, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Black center dot
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(wx, wy, 4 * scale, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    if (draggable) {
+                        ctx.fillStyle = '#dc3545';
+                        ctx.font = `bold ${14 * scale}px Arial`;
+                        ctx.textAlign = 'center';
+                        // No text when 0 wind - the circle says it all
+                    }
+                } else {
+                    // Teardrop/cone when wind (top-down view, pointing in wind direction)
+                    const windAngle = gameState.windDirection * Math.PI / 180;
+                    const coneLength = (gameState.windSpeed / 25) * 70 * scale; // Scale cone length
+                    
+                    // Back of windsock (wide part)
+                    const backX = wx;
+                    const backY = wy;
+                    const backRadius = 12 * scale;
+                    
+                    // Front of windsock (narrow tip)
+                    const tipX = wx + Math.sin(windAngle) * coneLength;
+                    const tipY = wy - Math.cos(windAngle) * coneLength;
+                    
+                    // Draw 4 horizontal stripes
+                    const numStripes = 4;
+                    for (let i = 0; i < numStripes; i++) {
+                        // Position along the cone
+                        const t1 = i / numStripes;
+                        const t2 = (i + 1) / numStripes;
+                        
+                        // Stripe positions
+                        const x1 = backX + Math.sin(windAngle) * coneLength * t1;
+                        const y1 = backY - Math.cos(windAngle) * coneLength * t1;
+                        const x2 = backX + Math.sin(windAngle) * coneLength * t2;
+                        const y2 = backY - Math.cos(windAngle) * coneLength * t2;
+                        
+                        // Width decreases from back to tip
+                        const w1 = backRadius * (1 - t1 * 0.8); // Tapers to 20% of original
+                        const w2 = backRadius * (1 - t2 * 0.8);
+                        
+                        // Perpendicular direction for width
+                        const perpX = Math.cos(windAngle);
+                        const perpY = Math.sin(windAngle);
+                        
+                        // Alternate orange and white
+                        ctx.fillStyle = (i % 2 === 0) ? '#ff6b00' : '#ffffff';
+                        ctx.strokeStyle = '#333';
+                        ctx.lineWidth = 1.5 * scale;
+                        
+                        // Draw stripe as trapezoid
+                        ctx.beginPath();
+                        ctx.moveTo(x1 + perpX * w1, y1 + perpY * w1);
+                        ctx.lineTo(x2 + perpX * w2, y2 + perpY * w2);
+                        ctx.lineTo(x2 - perpX * w2, y2 - perpY * w2);
+                        ctx.lineTo(x1 - perpX * w1, y1 - perpY * w1);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                    
+                    // Black dot at base
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(backX, backY, 4 * scale, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    if (draggable) {
+                        // Display values opposite to wind direction
+                        const textDistance = 30 * scale;
+                        const textAngle = (gameState.windDirection + 180) * Math.PI / 180;
+                        const textX = wx + Math.sin(textAngle) * textDistance;
+                        const textY = wy - Math.cos(textAngle) * textDistance;
+                        
+                        // Add strong glow effect
+                        ctx.shadowColor = '#ff0000';
+                        ctx.shadowBlur = 15 * scale;
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = `bold ${16 * scale}px Arial`;
+                        ctx.textAlign = 'center';
+                        // Draw text multiple times for stronger glow
+                        ctx.fillText(gameState.windSpeed + ' kts', textX, textY);
+                        ctx.shadowBlur = 8 * scale;
+                        ctx.fillText(gameState.windSpeed + ' kts', textX, textY);
+                        // Reset shadow
+                        ctx.shadowColor = 'transparent';
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            };
+            
+            if (!gameState.running) {
+                // During setup: draggable windsock
+                drawWindsock(gameState.windControlX, gameState.windControlY, true);
+            } else {
+                // During flight: keep windsock in same position as setup
+                drawWindsock(gameState.windControlX, gameState.windControlY, false);
+            }
+            
+            // Altitude shown only by the floating indicator that tracks the parachute
+            
+            
+            // Draw target - simple 2D bullseye
+            ctx.save();
+            
+            // Scale inversely to zoom so target stays same size on screen
+            const targetScreenSize = 13; // Constant screen size in pixels
+            const targetWorldSize = targetScreenSize / gameState.zoom;
+            
+            // If in flight mode, counter-rotate the target so it always looks the same
+            if (gameState.running) {
+                ctx.translate(gameState.targetX, gameState.targetY);
+                ctx.rotate(gameState.heading * Math.PI / 180); // Counter-rotate
+                ctx.translate(-gameState.targetX, -gameState.targetY);
+            }
+            
+            // Outer circle (white)
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(gameState.targetX, gameState.targetY, targetWorldSize, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Red ring
+            ctx.fillStyle = '#dc3545';
+            ctx.beginPath();
+            ctx.arc(gameState.targetX, gameState.targetY, targetWorldSize * 0.75, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // White ring
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(gameState.targetX, gameState.targetY, targetWorldSize * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Red center
+            ctx.fillStyle = '#dc3545';
+            ctx.beginPath();
+            ctx.arc(gameState.targetX, gameState.targetY, targetWorldSize * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Green border
+            ctx.strokeStyle = '#28a745';
+            ctx.lineWidth = 3 / gameState.zoom; // Scale line width too
+            ctx.beginPath();
+            ctx.arc(gameState.targetX, gameState.targetY, targetWorldSize, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            ctx.restore();
+            
+            // Draw path with altitude-based colors (only after landing)
+            if (gameState.path.length > 1 && gameState.landingX !== null) {
+                ctx.lineWidth = 3;
+                
+                for (let i = 1; i < gameState.path.length; i++) {
+                    // Use actual altitude stored in path point
+                    const pointAltitude = gameState.path[i].altitude;
+                    
+                    // Set color based on altitude
+                    if (pointAltitude > 600) {
+                        ctx.strokeStyle = '#28a745'; // Green (1000-600 ft)
+                    } else if (pointAltitude > 300) {
+                        ctx.strokeStyle = '#ffc107'; // Yellow (600-300 ft)
+                    } else {
+                        ctx.strokeStyle = '#ff6b00'; // Orange (300-0 ft)
+                    }
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(gameState.path[i - 1].x, gameState.path[i - 1].y);
+                    ctx.lineTo(gameState.path[i].x, gameState.path[i].y);
+                    ctx.stroke();
+                }
+            }
+            
+            // Draw parachute (moving position during flight with first-person rotation)
+            if (gameState.altitude > 0) {
+                const parachuteScreenSize = 8; // Constant screen size
+                const parachuteWorldSize = parachuteScreenSize / gameState.zoom;
+                
+                ctx.fillStyle = '#007bff';
+                ctx.beginPath();
+                ctx.arc(gameState.x, gameState.y, parachuteWorldSize, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Arrow will be drawn later outside rotated context for flight mode
+                if (!gameState.running) {
+                    // During setup, draw heading indicator in screen space (constant size)
+                    ctx.restore(); // exit world transform temporarily
+                    ctx.save();
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    
+                    // Find screen position of parachute
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const sx = (gameState.x + gameState.viewOffsetX - centerX) * gameState.zoom + centerX;
+                    const sy = (gameState.y + gameState.viewOffsetY - centerY) * gameState.zoom + centerY;
+                    
+                    const headingLength = 28;
+                    const hRad = gameState.heading * Math.PI / 180;
+                    const arrowEndX = sx + Math.sin(hRad) * headingLength;
+                    const arrowEndY = sy - Math.cos(hRad) * headingLength;
+                    
+                    ctx.strokeStyle = '#007bff';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.moveTo(sx, sy);
+                    ctx.lineTo(arrowEndX, arrowEndY);
+                    ctx.stroke();
+                    
+                    // Arrowhead
+                    ctx.fillStyle = '#007bff';
+                    ctx.beginPath();
+                    ctx.moveTo(arrowEndX, arrowEndY);
+                    ctx.lineTo(arrowEndX - Math.sin(hRad - 0.5) * 8, arrowEndY + Math.cos(hRad - 0.5) * 8);
+                    ctx.lineTo(arrowEndX - Math.sin(hRad + 0.5) * 8, arrowEndY + Math.cos(hRad + 0.5) * 8);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.restore();
+                    // Re-enter world transform
+                    ctx.save();
+                    const cx2 = canvas.width / 2, cy2 = canvas.height / 2;
+                    ctx.translate(cx2, cy2);
+                    ctx.scale(gameState.zoom, gameState.zoom);
+                    ctx.translate(-cx2, -cy2);
+                    ctx.translate(gameState.viewOffsetX, gameState.viewOffsetY);
+                }
+            }
+            
+            // Draw landing marker if landed
+            if (gameState.landingX !== null && gameState.landingY !== null) {
+                // Color based on distance
+                const landingColor = gameState.landingDistance <= 50 ? '#00ff88'
+                    : gameState.landingDistance <= 150 ? '#40c8ff'
+                    : '#ff3333';
+                const glowColor = gameState.landingDistance <= 50 ? 'rgba(0,255,136,0.5)'
+                    : gameState.landingDistance <= 150 ? 'rgba(64,200,255,0.5)'
+                    : 'rgba(255,51,51,0.5)';
+
+                const xScreenSize = 9;
+                const xSize = xScreenSize / gameState.zoom;
+                const lineW = 3.5 / gameState.zoom;
+
+                // Glow pass (thick, blurred-looking)
+                ctx.strokeStyle = glowColor;
+                ctx.lineWidth = lineW * 4;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(gameState.landingX - xSize, gameState.landingY - xSize);
+                ctx.lineTo(gameState.landingX + xSize, gameState.landingY + xSize);
+                ctx.moveTo(gameState.landingX + xSize, gameState.landingY - xSize);
+                ctx.lineTo(gameState.landingX - xSize, gameState.landingY + xSize);
+                ctx.stroke();
+
+                // Bright core
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = lineW * 1.2;
+                ctx.beginPath();
+                ctx.moveTo(gameState.landingX - xSize, gameState.landingY - xSize);
+                ctx.lineTo(gameState.landingX + xSize, gameState.landingY + xSize);
+                ctx.moveTo(gameState.landingX + xSize, gameState.landingY - xSize);
+                ctx.lineTo(gameState.landingX - xSize, gameState.landingY + xSize);
+                ctx.stroke();
+
+                // Colored X on top
+                ctx.strokeStyle = landingColor;
+                ctx.lineWidth = lineW;
+                ctx.beginPath();
+                ctx.moveTo(gameState.landingX - xSize, gameState.landingY - xSize);
+                ctx.lineTo(gameState.landingX + xSize, gameState.landingY + xSize);
+                ctx.moveTo(gameState.landingX + xSize, gameState.landingY - xSize);
+                ctx.lineTo(gameState.landingX - xSize, gameState.landingY + xSize);
+                ctx.stroke();
+                ctx.lineCap = 'butt';
+
+                // Distance label above X — black outline for readability, colored fill
+                const labelOffset = 20 / gameState.zoom;
+                const fontSize = 14 / gameState.zoom;
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                const labelX = gameState.landingX;
+                const labelY = gameState.landingY - labelOffset;
+                const label = gameState.landingDistance + ' ft';
+
+                // Text glow
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = 8 / gameState.zoom;
+                // Dark outline
+                ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+                ctx.lineWidth = 4 / gameState.zoom;
+                ctx.strokeText(label, labelX, labelY);
+                // Bright fill
+                ctx.fillStyle = landingColor;
+                ctx.fillText(label, labelX, labelY);
+                ctx.shadowBlur = 0;
+
+                // Dashed line to target
+                ctx.strokeStyle = landingColor;
+                ctx.lineWidth = 1.5 / gameState.zoom;
+                ctx.setLineDash([5 / gameState.zoom, 5 / gameState.zoom]);
+                ctx.globalAlpha = 0.7;
+                ctx.beginPath();
+                ctx.moveTo(gameState.landingX, gameState.landingY);
+                ctx.lineTo(gameState.targetX, gameState.targetY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.globalAlpha = 1.0;
+            }
+            
+            // Restore context
+            ctx.restore();
+            
+            // Draw parachute arrow on top (not rotated) during flight
+            if (gameState.running && gameState.altitude > 0) {
+                ctx.save();
+                ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+                
+                // The parachute is always at center of screen during flight
+                const screenX = canvas.width / 2;
+                const screenY = canvas.height / 2;
+                
+                // Draw arrow pointing straight up on screen
+                const headingLength = 25;
+                ctx.strokeStyle = '#007bff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(screenX, screenY);
+                ctx.lineTo(screenX, screenY - headingLength);
+                ctx.stroke();
+                
+                // Arrow head pointing up
+                ctx.fillStyle = '#007bff';
+                ctx.beginPath();
+                ctx.moveTo(screenX, screenY - headingLength);
+                ctx.lineTo(screenX - 5, screenY - headingLength + 10);
+                ctx.lineTo(screenX + 5, screenY - headingLength + 10);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Draw altitude below parachute
+                ctx.font = 'bold 32px Arial';
+                ctx.fillStyle = '#dc3545';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(Math.max(0, Math.round(gameState.altitude)) + ' ft', screenX, screenY + 20);
+                
+                ctx.restore();
+            }
+        }
+        
+        function drawArrowHead(x, y, angle, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(
+                x - Math.sin((angle - 30) * Math.PI / 180) * 10,
+                y + Math.cos((angle - 30) * Math.PI / 180) * 10
+            );
+            ctx.lineTo(
+                x - Math.sin((angle + 30) * Math.PI / 180) * 10,
+                y + Math.cos((angle + 30) * Math.PI / 180) * 10
+            );
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        function drawCompass() {
+            // Save and restore to draw compass without rotation
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+            
+            const cx = canvas.width - 60;
+            const cy = 60;
+            const radius = 35;
+            
+            // Circle
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Fill
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fill();
+            
+            // Draw heading indicator (red line pointing to current heading)
+            if (gameState.running) {
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(gameState.heading * Math.PI / 180);
+                
+                ctx.strokeStyle = '#dc3545';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, -radius + 8);
+                ctx.stroke();
+                
+                // Red triangle at end
+                ctx.fillStyle = '#dc3545';
+                ctx.beginPath();
+                ctx.moveTo(0, -radius + 8);
+                ctx.lineTo(-4, -radius + 14);
+                ctx.lineTo(4, -radius + 14);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.restore();
+            }
+            
+            // N, S, E, W labels
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('N', cx, cy - radius + 15);
+            ctx.fillText('S', cx, cy + radius - 8);
+            ctx.fillText('E', cx + radius - 10, cy + 3);
+            ctx.fillText('W', cx - radius + 10, cy + 3);
+            
+            // Heading text
+            if (gameState.running || gameState.setupPhase === 'ready') {
+                ctx.fillStyle = '#dc3545';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText(Math.round(gameState.heading) + '°', cx, cy);
+            }
+            
+            ctx.restore();
+        }
+        
+        function drawZoomControls() {
+            // Save and restore to draw zoom controls without rotation
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+            
+            const cx = canvas.width - 60;
+            const cy = 130; // Below compass
+            const buttonSize = 28;
+            const gap = 5;
+            
+            // Minus button
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(cx - buttonSize - gap/2, cy, buttonSize, buttonSize);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cx - buttonSize - gap/2, cy, buttonSize, buttonSize);
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('−', cx - gap/2 - buttonSize/2, cy + buttonSize/2);
+            
+            // Plus button
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(cx + gap/2, cy, buttonSize, buttonSize);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cx + gap/2, cy, buttonSize, buttonSize);
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('+', cx + gap/2 + buttonSize/2, cy + buttonSize/2);
+            
+            // Zoom level display
+            ctx.fillStyle = '#666';
+            ctx.font = '11px Arial';
+            ctx.fillText(Math.round(gameState.zoom * 100) + '%', cx, cy + buttonSize + 12);
+            
+            ctx.restore();
+        }
+        
+        function drawScaleBar() {
+            // Draw scale reference bar (not affected by zoom/rotation)
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+            
+            const barX = 20;
+            const barY = canvas.height - 40;
+            const barLength = 100; // pixels at 1x zoom
+            const distanceFt = (barLength / 35) * 200; // How many feet this represents
+            
+            // White background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(barX - 5, barY - 20, barLength + 10, 35);
+            
+            // Black border
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(barX - 5, barY - 20, barLength + 10, 35);
+            
+            // Scale bar
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(barX, barY);
+            ctx.lineTo(barX + barLength, barY);
+            ctx.stroke();
+            
+            // End ticks
+            ctx.beginPath();
+            ctx.moveTo(barX, barY - 5);
+            ctx.lineTo(barX, barY + 5);
+            ctx.moveTo(barX + barLength, barY - 5);
+            ctx.lineTo(barX + barLength, barY + 5);
+            ctx.stroke();
+            
+            // Label
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(Math.round(distanceFt) + ' ft', barX + barLength/2, barY - 8);
+            
+            ctx.restore();
+        }
+        
+        // Initial draw
+        draw();
+        updateStats();
+    </script>
+    
+    <!-- Measurement Modal -->
+    <div id="measurementModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 90%; max-height: 90%; overflow: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <h2 style="margin-top: 0; color: #333;">📏 Calibrate Map Scale</h2>
+            <p style="color: #666; margin-bottom: 20px;">Click two points on any feature with a known distance (runway, building, etc.)</p>
+            
+            <canvas id="measureCanvas" style="border: 3px solid #333; cursor: crosshair; max-width: 100%; display: block; margin: 0 auto;"></canvas>
+            
+            <div style="margin-top: 20px; display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap;">
+                <button onclick="clearMeasurement()" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Clear</button>
+                
+                <label style="font-weight: 600;">Distance:</label>
+                <input type="number" id="measureDistance" placeholder="e.g., 5000" min="1" style="padding: 10px; font-size: 16px; width: 120px; border: 2px solid #ddd; border-radius: 4px;">
+                <label style="font-weight: 600;">feet</label>
+                
+                <button onclick="applyScale()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Apply Scale</button>
+                <button onclick="closeMeasurement()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cancel</button>
+            </div>
+            
+            <div id="measureResult" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none;">
+                <p style="margin: 0; font-weight: 600; color: #333;"></p>
+            </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Instructions Modal -->
+    <div id="instructions-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; max-width: 600px; max-height: 80vh; position: relative; direction: rtl; text-align: right; overflow: hidden;">
+            <button onclick="closeInstructions()" style="position: absolute; top: 12px; left: 12px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 20px; font-weight: bold; z-index: 10;">×</button>
+            <div style="padding: 32px; padding-left: 60px; max-height: 80vh; overflow-y: auto; padding-top: 60px;">
+                <h2 style="margin-top: 0; color: #1a1a2e; font-size: 22px; margin-bottom: 20px;">הוראות לסימולטור נחיתות</h2>
+            <div style="line-height: 1.8; color: #333; font-size: 15px;">
+                <p style="margin-bottom: 0.5em;">בחרו משקל יציאה, שזה המשקל שלכם + 15 ק״ג ציוד.<br>
+                בחרו גודל חופה - בצניחות הראשונות חניכים מעל 60 ק״ג יעלו על 260, חניכים (בעיקר חניכות) מתחת ל60 ק״ג יעלו על 220.</p>
+                
+                <p style="margin: 1.5em 0 0.5em 0;">ניתן לגרור כדי לזוז על המפה ולגלול כדי להגדיל או להקטין.</p>
+                
+                <p style="margin: 1.5em 0 0.5em 0;">העיגול הכתום זה שק הרוח, אפשר למתוח אותו כדי לקבוע את כיוון ועוצמת הרוח. לחצו על הנקודה השחורה באמצע כדי לקבוע אפס רוח.</p>
+                
+                <p style="margin: 1.5em 0 0.5em 0;">המטרה ממוקמת מראש איפה שאני רוצה שתמיד תנחתו בקורס, אבל ניתן להזיז אותה אם ממש מתחשק לכם.</p>
+                
+                <p style="margin: 1.5em 0 0.5em 0;">העיגול הכחול זה המצנח והחץ מראה לאן האף שלו מכוון. הזיזו אותו לנקודה בה תתחילו את התבנית שלכם בגובה 1000 רגל. השתמשו בחצים כדי לקבוע את הכיוון ההתחלתי שלו.</p>
+                
+                <p style="margin: 1.5em 0 0.5em 0;">לחצו רווח כדי להתחיל לטוס. השתמשו בחצים כדי לפנות. גללו למעלה או למטה כדי להגדיל או להקטין.</p>
+                
+                <p style="font-weight: 600; margin: 2em 0 0.5em 0;">שימו לב:</p>
+                <p style="margin-bottom: 0.5em;">הסימולטור לא לוקח בחשבון איבוד גובה בפניות (גם ככה לא ניתן לבצע פה פניות חדות) ואין יכולת לבלום. המטרה היא לעשות צלעות רחבות וצפויות עם ההגאים עד הסוף למעלה בטיסה מלאה, ללא אלתורים באמצע.<br>
+                אין פה עזרים לתכנון הנחיתה. בשביל זה יש את החוברת ומה שלמדתם בקורס, ועזרים כמו גוגל מאפס בשביל לבדוק מרחקים. המטרה היא לתכנן תבנית כמו שצריך, להטיס אותה בסימולטור ולתקן בהתאם לתוצאה.</p>
+                
+                <p style="margin-top: 1.5em; margin-bottom: 0;">בחנו את עצמכם במגוון עוצמות וכיווני רוח. ההגבלה לחניכים היא רוח של 12 קשר, אבל אתם מוזמנים לנסות גם רוחות יותר חזקות כדי להבין בדיוק למה לא כדאי לעלות בהן. :)</p>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openInstructions() {
+            if (gameState.running) return; // No instructions during flight
+            document.getElementById('instructions-modal').style.display = 'flex';
+        }
+        function closeInstructions() {
+            document.getElementById('instructions-modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
